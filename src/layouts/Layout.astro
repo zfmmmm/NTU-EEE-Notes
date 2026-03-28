@@ -49,6 +49,9 @@ const structuredData = pubDatetime
       ],
     }
   : null;
+
+const showCursorGlow = SITE.backdropEffects.cursorGlow;
+const showGrain = SITE.backdropEffects.grain;
 ---
 
 <!doctype html>
@@ -180,8 +183,8 @@ const structuredData = pubDatetime
     <!-- Global decorative backdrop (grid, glow, cursor glow, noise) -->
     <div class="site-backdrop pointer-events-none" aria-hidden="true" transition:persist>
       <div class="site-grid"></div>
-      <div class="site-cursor-glow"></div>
-      <div class="site-grain"></div>
+      {showCursorGlow && <div class="site-cursor-glow"></div>}
+      {showGrain && <div class="site-grain"></div>}
     </div>
 
     <slot />
@@ -253,16 +256,12 @@ const structuredData = pubDatetime
     opacity: 0;
     transition: opacity 0.5s ease;
     pointer-events: none;
-  }
-
-  @media (pointer: fine) {
-    .site-cursor-glow {
-      will-change: transform;
-    }
+    contain: paint;
   }
 
   .site-cursor-glow.active {
     opacity: 1;
+    will-change: transform;
   }
 
   @media (prefers-reduced-motion: reduce) {
@@ -280,50 +279,65 @@ const structuredData = pubDatetime
     opacity: 0.09;
     mix-blend-mode: overlay;
     pointer-events: none;
+    contain: paint;
   }
 </style>
 
-<script>
-  let cursorCleanup: AbortController | null = null;
+{
+  showCursorGlow && (
+    <script>
+      let cursorCleanup: AbortController | null = null;
 
-  document.addEventListener("astro:page-load", () => {
-    // Cleanup previous listeners
-    if (cursorCleanup) cursorCleanup.abort();
-    cursorCleanup = new AbortController();
-    const { signal } = cursorCleanup;
+      document.addEventListener("astro:page-load", () => {
+        // Cleanup previous listeners
+        if (cursorCleanup) cursorCleanup.abort();
+        cursorCleanup = new AbortController();
+        const { signal } = cursorCleanup;
 
-    // Skip cursor glow on touch-only devices (no pointer cursor)
-    if (window.matchMedia("(pointer: coarse)").matches) return;
+        // Skip on touch devices and respect reduced-motion preference.
+        if (
+          window
+            .matchMedia("(pointer: coarse), (prefers-reduced-motion: reduce)")
+            .matches
+        ) {
+          return;
+        }
 
-    const cursorGlow = document.querySelector<HTMLElement>(".site-cursor-glow");
-    let ticking = false;
+        const cursorGlow = document.querySelector<HTMLElement>(".site-cursor-glow");
+        let ticking = false;
+        let isActive = false;
 
-    if (cursorGlow) {
-      document.addEventListener(
-        "mousemove",
-        (e: MouseEvent) => {
-          if (!ticking) {
+        if (!cursorGlow) return;
+
+        document.addEventListener(
+          "mousemove",
+          (e: MouseEvent) => {
+            if (ticking) return;
+
+            ticking = true;
             window.requestAnimationFrame(() => {
               cursorGlow.style.setProperty("--site-cx", `${e.clientX}px`);
               cursorGlow.style.setProperty("--site-cy", `${e.clientY}px`);
-              if (!cursorGlow.classList.contains("active")) {
+              if (!isActive) {
                 cursorGlow.classList.add("active");
+                isActive = true;
               }
               ticking = false;
             });
-            ticking = true;
-          }
-        },
-        { signal }
-      );
+          },
+          { signal, passive: true }
+        );
 
-      document.addEventListener(
-        "mouseleave",
-        () => {
-          cursorGlow.classList.remove("active");
-        },
-        { signal }
-      );
-    }
-  });
-</script>
+        document.addEventListener(
+          "mouseleave",
+          () => {
+            if (!isActive) return;
+            cursorGlow.classList.remove("active");
+            isActive = false;
+          },
+          { signal }
+        );
+      });
+    </script>
+  )
+}

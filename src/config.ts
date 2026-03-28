@@ -13,6 +13,10 @@ export const SITE = {
   showGalleries: true,
   showGalleriesInIndex: true, // Show galleries in the general paginated list
   showBackButton: true, // show back button in post detail
+  backdropEffects: {
+    cursorGlow: true, // seguimiento de cursor con halo suave
+    grain: true, // capa de ruido visual de fondo
+  },
   editPost: {
     enabled: true,
     text: "Editar este post",
