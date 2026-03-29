@@ -15,7 +15,7 @@ import { SITE } from "@/config";
 export const getStaticPaths = (async ({ paginate }) => {
   const [blogPosts, galleryPosts] = await Promise.all([
     getCollection("blog", ({ data }) => !data.draft),
-    SITE.showGalleriesInIndex
+    SITE.showGalleries && SITE.showGalleriesInIndex
       ? getCollection("galleries", ({ data }) => !data.draft)
       : Promise.resolve([]),
   ]);

@@ -7,7 +7,7 @@ import { SITE } from "@/config";
 export async function GET() {
   const [blogPosts, galleryPosts] = await Promise.all([
     getCollection("blog"),
-    SITE.showGalleriesInIndex
+    SITE.showGalleries && SITE.showGalleriesInIndex
       ? getCollection("galleries")
       : Promise.resolve([]),
   ]);

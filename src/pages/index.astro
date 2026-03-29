@@ -15,7 +15,7 @@ import IntroAudio from "@/components/IntroAudio.astro";
 
 const [blogPosts, galleryPosts] = await Promise.all([
   getCollection("blog"),
-  SITE.showGalleriesInIndex
+  SITE.showGalleries && SITE.showGalleriesInIndex
     ? getCollection("galleries")
     : Promise.resolve([]),
 ]);

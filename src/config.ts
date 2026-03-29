@@ -11,7 +11,7 @@ export const SITE = {
   scheduledPostMargin: 15 * 60 * 1000, // 15 minutes
   showArchives: true,
   showGalleries: true,
-  showGalleriesInIndex: true, // Show galleries in the general paginated list
+  showGalleriesInIndex: true, // Show galleries in the general paginated list (only if showGalleries is true)
   showBackButton: true, // show back button in post detail
   heroTerminalPrompt: {
     prefix: "~", // parte resaltada a la izquierda

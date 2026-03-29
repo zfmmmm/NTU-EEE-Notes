@@ -47,24 +47,23 @@ Heavily customized version of the [AstroPaper](https://github.com/satnaing/astro
 | :------------ | :------------------------ |
 | Body          | `Wotfard` (local)         |
 | Code / Mono   | `Cascadia Code` (local)   |
-| Italics / H3  | `Sriracha` (Google Fonts) |
+| Italics / H3  | `Sriracha` (Local) |
 
 ### Global search (⌘K)
 
-- Modal via `⌘K` / `Ctrl+K` powered by **Pagefind** (static index)
-- Animated aurora, reactive cursor glow, full keyboard navigation
+- Modal via `⌘K` / `Ctrl+K` powered by **Pagefind** (static index) and full keyboard navigation (if you want to test it locally, run `pnpm run build` first and after that `pnpm run dev` or `pnpm run preview` since the index is only generated in production)
 
 ### Image galleries (`/galleries`)
 
 - Albums in `src/data/galleries/<slug>/`; images optimized at build-time (srcset, WebP, lazy)
 - Native lightbox with `<dialog>`, redesigned fullscreen layout, keyboard navigation and edge-aware prev/next controls
 - `<GalleryEmbed>` to embed galleries inside MDX posts without importing
-- Controlled by `showGalleries` in `src/config.ts` — see [GALLERIES.md](GALLERIES.md)
+- Controlled by `showGalleries` in `src/config.ts` (also gates gallery inclusion in mixed feeds) — see [GALLERIES.md](GALLERIES.md)
 
 ### Unified mixed feed (posts + galleries)
 
-- Optional mixed feed controlled by `showGalleriesInIndex` in `src/config.ts`
-- When enabled, gallery entries are included in `/`, `/posts`, `/archives`, `/tags`, and `/rss.xml`
+- Optional mixed feed controlled by `showGalleriesInIndex` in `src/config.ts` (effective only if `showGalleries` is `true`)
+- When both flags are enabled, gallery entries are included in `/`, `/posts`, `/archives`, `/tags`, and `/rss.xml`
 - Shared URL/date helpers keep routing and publish-date sorting consistent across all listing pages
 - Gallery entries include a visual badge in cards and archive timeline items
 
@@ -130,7 +129,7 @@ pnpm run dev
 The Pagefind search index is **only available in the production build**. To test it locally:
 
 ```bash
-pnpm run build && pnpm run preview
+pnpm run build && pnpm run preview/dev
 ```
 
 ### Docker
@@ -193,54 +192,14 @@ hideEditPost: false
 
 ### Galleries (`src/data/galleries/`)
 
-Create a **folder** with the desired slug. Place an `index.md` and image files inside:
+Quick setup:
 
-```
-src/data/galleries/
-└── my-trip-to-tokyo/
-    ├── index.md
-    ├── 01-shibuya.jpg
-    ├── 02-asakusa.jpg
-    └── 03-fuji.png
-```
+1. Create a folder in `src/data/galleries/<slug>/`.
+2. Add `index.md` (gallery metadata) and image files.
+3. Use numeric prefixes (`01-`, `02-`, …) if you want to control image order.
+4. The folder slug becomes the route: `/galleries/<slug>`.
 
-The folder name becomes the URL: `/galleries/my-trip-to-tokyo`.
-
-If `showGalleriesInIndex` is enabled in `src/config.ts`, galleries will also appear in the main listing surfaces (`/`, `/posts`, `/archives`, `/tags`, and RSS).
-
-Images are displayed **sorted alphabetically**. Use numeric prefixes (`01-`, `02-`, …) to control the order.
-
-#### Gallery frontmatter
-
-```yaml
----
-title: "My Trip to Tokyo"           # required
-description: "Travel photos..."     # required
-pubDatetime: 2026-01-20T00:00:00Z   # required
-draft: false
-coverImage: ./01-shibuya.jpg        # optional — explicit cover image
-tags:
-  - japan
-  - travel
----
-```
-
-> Galleries have no body text; all visual content comes from the images in the folder.
-
-#### Cover image
-
-- **With `coverImage`**: Astro resolves and optimizes the relative path. If that image is already in the folder it won't be shown twice on the detail page.
-- **Without `coverImage`**: the first image (alphabetically) is used as the cover in listing cards.
-
-#### Automatic alt text
-
-The alt text is derived from the filename:
-
-```
-01-sunset-kyoto.jpg     →  "Sunset Kyoto"
-002_fuji_mountain.png   →  "Fuji Mountain"
-IMG_4532.JPG            →  gallery title (fallback)
-```
+For full details (frontmatter fields, cover behavior, alt generation, and image optimization), see [GALLERIES.md](GALLERIES.md).
 
 ---
 
@@ -249,76 +208,22 @@ IMG_4532.JPG            →  gallery title (fallback)
 Embed a gallery inside any `.mdx` post — **no import needed**:
 
 ```mdx
-{/* First 6 photos, 3 columns (default) */}
 <GalleryEmbed slug="my-trip-to-tokyo" />
-
-{/* Only 4 photos in 2 columns, no footer link */}
-<GalleryEmbed slug="my-trip-to-tokyo" limit={4} cols={2} showLink={false} />
-
-{/* All photos */}
-<GalleryEmbed slug="my-trip-to-tokyo" limit={0} />
 ```
 
-| Prop       | Type          | Default | Description                                               |
-| :--------- | :------------ | :------ | :-------------------------------------------------------- |
-| `slug`     | `string`      | —       | **Required.** Folder name in `src/data/galleries/`        |
-| `limit`    | `number`      | `6`     | Max images to show. `0` = all                             |
-| `showLink` | `boolean`     | `true`  | Show link to the full gallery at the bottom               |
-| `cols`     | `2 \| 3 \| 4` | `3`     | Number of grid columns                                    |
+Optional props: `limit` (`0` = all), `cols` (`2 | 3 | 4`), `showLink` (`true/false`).
 
-Each `<GalleryEmbed>` creates its own lightbox `<dialog id="ge-lb-{slug}">`, allowing **multiple embeds in the same post** without conflicts. Invalid slugs render a warning block instead of breaking the build.
+For advanced usage, full props reference, lightbox behavior, and invalid slug fallback, see [GALLERIES.md](GALLERIES.md#galleryembed--gallery-inside-mdx-posts).
 
 ---
 
 ## ⚙️ Configuration
 
-All site configuration lives in `src/config.ts` (the `SITE` constant):
-
-```ts
-export const SITE = {
-  website: "https://devosfera.vercel.app/",
-  author: "Andrés",
-  desc: "A space where curiosity turns into code",
-  title: "Devosfera",
-  timezone: "America/Guatemala",  // default timezone for posts
-  showArchives: true,
-  showGalleries: true,   // false → hides /galleries and the nav link
-  showGalleriesInIndex: true, // include galleries in home/posts/archives/tags/RSS
-  showBackButton: true,
-  heroTerminalPrompt: {
-    prefix: "~", // highlighted left part
-    path: "/ready-to-go", // main prompt text
-    suffix: "$", // terminal symbol on the right
-  },
-  dynamicOgImage: true,
-  introAudio: {
-    enabled: true,               // show/hide the hero audio player
-    src: "/audio/intro-web.mp3", // path relative to /public
-    label: "INTRO.MP3",
-    duration: 30,                // seconds
-  },
-};
-```
+All site configuration lives in `src/config.ts` (the `SITE` constant). It includes general settings (title, description, timezone), feature toggles (galleries, audio player, mixed feed), and content limits (posts per page, gallery embed limit).
 
 Social links and "Share" links are defined in `src/constants.ts`.
 
 > For details on visual effects, typography and the design system see [CUSTOMIZATIONS.md](CUSTOMIZATIONS.md).
-
----
-
-## 🧩 Key components
-
-| Component               | Description                                                                      |
-| :---------------------- | :------------------------------------------------------------------------------- |
-| `Header.astro`          | Glassmorphism navbar with animated SVG logo, `⌘K` trigger, fullscreen mobile menu |
-| `SearchModal.astro`     | Global Cmd+K modal with Aurora background, reactive cursor glow and Pagefind     |
-| `GalleryCard.astro`     | Card for the `/galleries` listing with optimized cover image                     |
-| `GalleryEmbed.astro`    | Gallery embed for MDX posts with its own lightbox                                |
-| `Card.astro`            | Post card with reactive cursor glow (`.card-glow-effect`)                        |
-| `BackToTopButton.astro` | `fixed` button with SVG progress ring, unified mobile/desktop design             |
-| `BackButton.astro`      | Glassmorphism pill with inline breadcrumb and chevron animation                  |
-| `ShareLinks.astro`      | Square glassmorphism share buttons, open in new tab                              |
-| `Footer.astro`          | Brand column + social links + copyright, gradient separators                     |
 
 ---
 
@@ -341,4 +246,4 @@ Bugs and feature requests from the official [AstroPaper](https://github.com/satn
 ## 📜 License
 
 Based on [AstroPaper](https://github.com/satnaing/astro-paper) by [Sat Naing](https://satnaing.dev), licensed under MIT.
-Customizations © 0xdres.
+Customizations © [0xdres](https://github.com/0xdres).

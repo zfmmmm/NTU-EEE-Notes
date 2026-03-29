@@ -14,13 +14,14 @@
 5. [How images are processed](#how-images-are-processed)
 6. [Automatic alt text](#automatic-alt-text)
 7. [Cover image (coverImage)](#cover-image-coverimage)
-8. [Enable / disable the section](#enable--disable-the-section)
-9. [GalleryEmbed — gallery inside MDX posts](#galleryembed--gallery-inside-mdx-posts)
-10. [Architecture and data flow](#architecture-and-data-flow)
-11. [Lightbox](#lightbox)
-12. [Styles and responsive](#styles-and-responsive)
-13. [Known limitations](#known-limitations)
-14. [Future extensions](#future-extensions)
+8. [Enable / disable and visibility flags](#enable--disable-and-visibility-flags)
+9. [Mixed feed integration (posts + galleries)](#mixed-feed-integration-posts--galleries)
+10. [GalleryEmbed — gallery inside MDX posts](#galleryembed--gallery-inside-mdx-posts)
+11. [Architecture and data flow](#architecture-and-data-flow)
+12. [Lightbox](#lightbox)
+13. [Styles and responsive](#styles-and-responsive)
+14. [Known limitations](#known-limitations)
+15. [Future extensions](#future-extensions)
 
 ---
 
@@ -33,21 +34,35 @@ The Galleries feature allows publishing image collections accessible at `/galler
 
 Images are processed by the **Astro Assets** pipeline (`astro:assets`) at build time, generating optimized versions with `srcset`, lazy loading, and automatic modern format conversion.
 
+In addition to `/galleries`, gallery entries can participate in the global mixed feed (`posts + galleries`) used by `/`, `/posts`, `/archives`, `/tags`, and `/rss.xml`.
+
 ---
 
 ## Files involved
 
 | File | Role |
 |---|---|
-| `src/config.ts` | `showGalleries` flag to enable/disable the section |
+| `src/config.ts` | `showGalleries` + `showGalleriesInIndex` flags |
 | `src/content.config.ts` | `galleries` collection definition with Zod schema |
 | `src/components/GalleryCard.astro` | Card used in the listing page |
 | `src/components/GalleryEmbed.astro` | Component to embed galleries inside MDX posts |
+| `src/components/Card.astro` | Shared card for blog/gallery mixed feeds (adds gallery badge) |
 | `src/components/Header.astro` | Conditional nav link (desktop + mobile) |
-| `src/assets/icons/IconGallery.svg` | Grid icon for the header |
+| `src/assets/icons/IconGallery.svg` | Gallery icon used in header/cards/archive timeline |
 | `src/pages/galleries/index.astro` | Listing page `/galleries` |
 | `src/pages/galleries/[gallery].astro` | Detail page `/galleries/<slug>` |
+| `src/pages/index.astro` | Optional mixed feed on homepage |
+| `src/pages/posts/[...page].astro` | Optional mixed paginated listing |
+| `src/pages/archives/index.astro` | Optional mixed archive timeline |
+| `src/pages/tags/index.astro` | Optional mixed tag index |
+| `src/pages/tags/[tag]/[...page].astro` | Optional mixed tag detail pagination |
+| `src/pages/rss.xml.ts` | Optional mixed RSS feed aggregation |
 | `src/layouts/PostDetails.astro` | Registers `GalleryEmbed` as a global MDX component |
+| `src/utils/contentEntry.ts` | Shared typing + URL helpers for blog/gallery entries |
+| `src/utils/getSortedPosts.ts` | Shared date sorting for mixed entries |
+| `src/utils/getUniqueTags.ts` | Shared tag extraction for mixed entries |
+| `src/utils/getPostsByTag.ts` | Shared tag filtering for mixed entries |
+| `src/utils/getPostsByGroupCondition.ts` | Shared archive grouping helper for mixed entries |
 | `src/data/galleries/` | Root directory for gallery content |
 
 ---
@@ -189,18 +204,61 @@ coverImage: ./01-tokyo.jpg
 
 ---
 
-## Enable / disable the section
+## Enable / disable and visibility flags
 
 In `src/config.ts`:
 
 ```ts
 export const SITE = {
   // ...
-  showGalleries: true,  // false → redirects /galleries to 404 and hides the nav link
+  showGalleries: true,         // false → disables gallery section globally
+  showGalleriesInIndex: true,  // include galleries in mixed feeds (effective only when showGalleries=true)
 };
 ```
 
-Both `src/pages/galleries/index.astro` and `src/pages/galleries/[gallery].astro` check this flag on the server. `getStaticPaths` returns `[]` when `false`, so **no routes are generated in the build**.
+- `showGalleries = false`:
+  - `/galleries` index redirects to 404.
+  - `src/pages/galleries/[gallery].astro` returns `[]` from `getStaticPaths` (no gallery detail routes generated).
+  - Gallery nav links are hidden.
+  - Mixed feeds ignore galleries even if `showGalleriesInIndex` is `true`.
+- `showGalleries = true` and `showGalleriesInIndex = false`:
+  - `/galleries` remains available.
+  - Mixed listing surfaces remain blog-only.
+- `showGalleries = true` and `showGalleriesInIndex = true`:
+  - Galleries are included in mixed listing surfaces.
+
+---
+
+## Mixed feed integration (posts + galleries)
+
+The integration introduced in commit `dbfeb4b` unifies blog posts and galleries for global listing surfaces.
+
+### Affected surfaces
+
+- `/` (home feed)
+- `/posts` (paginated listing)
+- `/archives`
+- `/tags` and `/tags/<tag>`
+- `/rss.xml`
+
+### Implementation details
+
+- Entries are loaded in parallel with `Promise.all` and merged only when both flags are enabled.
+- Shared helpers (`contentEntry`, `getSortedPosts`, `getUniqueTags`, `getPostsByTag`) keep route/path generation and sorting logic consistent for both collections.
+- Visual differentiation:
+  - `Card.astro` adds a gallery icon badge when `collection === "galleries"`.
+  - `archives/index.astro` adds an inline gallery badge in timeline items.
+
+Representative pattern used by listing routes:
+
+```ts
+const [blogPosts, galleryPosts] = await Promise.all([
+  getCollection("blog"),
+  SITE.showGalleries && SITE.showGalleriesInIndex
+    ? getCollection("galleries")
+    : Promise.resolve([]),
+]);
+```
 
 ---
 
@@ -274,14 +332,18 @@ src/data/galleries/
   <slug>/
     index.md          ──► "galleries" collection (Astro Content)
     *.jpg / *.png     ──► import.meta.glob eagerly ──► ImageMetadata[]
-                                                          │
-                                        ┌─────────────────┴──────────────────┐
-                                        │                                    │
-                              index.astro                          [gallery].astro
-                         (listing /galleries)              (detail /galleries/<slug>)
-                                        │                                    │
-                              GalleryCard.astro                    <Image /> component
-                         coverImage or fallbackImage           grid + lightbox client-side
+                         │
+              ┌─────────────────────────┴──────────────────────────┐
+              │                                                    │
+          /galleries section                                 mixed feed (optional)
+       (index.astro + [gallery].astro)                    (enabled by both config flags)
+              │                                                    │
+      GalleryCard + detail lightbox                    shared helpers (contentEntry +
+        (<Image /> optimized)                       sort/tag/group utilities)
+              │                                                    │
+              └─────────────────────────┬──────────────────────────┘
+                         │
+                /, /posts, /archives, /tags, /rss.xml
 ```
 
 ---
@@ -339,9 +401,9 @@ Grid and lightbox styles are **scoped** inside `<style>` in `[gallery].astro`. G
 
 3. **No pagination on detail page**: if a gallery has many images (>100), all of them are rendered in the HTML. For very large galleries, pagination or infinite scroll would need to be implemented.
 
-4. **Alt text derived from filename**: it is automatic but not perfect. For images with non-descriptive names (e.g. `IMG_4532.jpg`), the resulting alt is generic. This can be improved in the future with an `images` field in the frontmatter (see extensions).
+4. **Alt text derived from filename**: it is automatic but not perfect. For images with non-descriptive names (e.g. `IMG_4532.jpg`), the resulting alt is generic. This can be improved in the future with an `images` field in the frontmatter.
 
-5. **No integration with global tags**: gallery tags do not appear in `/tags`. They are independent of the post tag system.
+5. **Tag visibility is tied to mixed-feed flags**: gallery tags appear in `/tags` only when both `showGalleries` and `showGalleriesInIndex` are enabled. There is no independent toggle for "include galleries in tags but not in home/posts".
 
 ---
 
@@ -366,9 +428,11 @@ In `[gallery].astro`, merge the frontmatter array with the folder images by `fil
 
 Add a `?page=N` parameter and paginate `images.slice(offset, offset + PAGE_SIZE)`. For SEO, use `<link rel="next">` / `<link rel="prev">`.
 
-### C. Integration with global tags
+### C. Independent toggle for tags/RSS integration
 
-Merge the `galleries` collection with the `blog` collection in `getUniqueTags.ts` so that gallery tags appear in `/tags`.
+Gallery integration in `/tags` and `/rss.xml` currently follows the same gate as the rest of the mixed feed (`showGalleries && showGalleriesInIndex`).
+
+If finer control is needed, add dedicated flags (for example `showGalleriesInTags` and `showGalleriesInRss`) and apply them in the corresponding routes.
 
 ### D. Lightbox with zoom
 
