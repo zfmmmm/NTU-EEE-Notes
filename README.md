@@ -1,6 +1,6 @@
 # Devosfera Blog
 
-Heavily customized version of the [AstroPaper](https://github.com/satnaing/astro-paper) theme with a **Terminal/Cyberpunk** aesthetic, image galleries, global search modal, and dozens of visual and interactive improvements.
+Heavily customized version of the [AstroPaper](https://github.com/satnaing/astro-paper) theme with a new aesthetic, image galleries, global search modal, and dozens of visual and interactive improvements.
 
 **🌐 Live demo:** [devosfera.vercel.app](https://devosfera.vercel.app)
 
@@ -31,15 +31,15 @@ Heavily customized version of the [AstroPaper](https://github.com/satnaing/astro
 
 ### Core (inherited from AstroPaper)
 
-- Type-safe Markdown, 100/100 Lighthouse performance, accessible and responsive
+- Type-safe Markdown, good performance, accessible and responsive
 - Full SEO (meta tags, Open Graph, sitemap, RSS), light/dark mode
 - Dynamically generated OG images with Satori
 
-### Terminal/Cyberpunk design
+### Modern design
 
-- Hero with animated prompt `~/ready-to-go $`, shimmer title and `// posts` decorative separators
-- Global backdrop: grid + ambient glow + cursor glow + noise texture (all pages)
-- Glassmorphism on navbar, TOC, cards and modals
+- Hero with animated prompt configurable from `heroTerminalPrompt` in `src/config.ts` (default: `~/ready-to-go $`)
+- Global backdrop: grid + cursor glow + noise texture (all pages) optional and configurable from `src/config.ts`
+- Glassmorphism on navbar, cards and modals
 
 ### Custom typography
 
@@ -57,9 +57,23 @@ Heavily customized version of the [AstroPaper](https://github.com/satnaing/astro
 ### Image galleries (`/galleries`)
 
 - Albums in `src/data/galleries/<slug>/`; images optimized at build-time (srcset, WebP, lazy)
-- Native lightbox with `<dialog>`, responsive grid 2→4 cols
+- Native lightbox with `<dialog>`, redesigned fullscreen layout, keyboard navigation and edge-aware prev/next controls
 - `<GalleryEmbed>` to embed galleries inside MDX posts without importing
 - Controlled by `showGalleries` in `src/config.ts` — see [GALLERIES.md](GALLERIES.md)
+
+### Unified mixed feed (posts + galleries)
+
+- Optional mixed feed controlled by `showGalleriesInIndex` in `src/config.ts`
+- When enabled, gallery entries are included in `/`, `/posts`, `/archives`, `/tags`, and `/rss.xml`
+- Shared URL/date helpers keep routing and publish-date sorting consistent across all listing pages
+- Gallery entries include a visual badge in cards and archive timeline items
+
+### Performance and maintainability improvements
+
+- Parallel collection loading in key routes using `Promise.all`
+- Optimized sorting and tag extraction logic for larger content sets
+- Stronger shared typing across blog/gallery entries (removed weak `any` usage)
+- Reduced duplicated route/slug logic by centralizing entry helpers
 
 ### Branded audio player
 
@@ -70,11 +84,11 @@ Heavily customized version of the [AstroPaper](https://github.com/satnaing/astro
 
 | Page        | Highlights                                          |
 | :---------- | :-------------------------------------------------- |
-| `/` Home    | Terminal hero, featured grid, section counters      |
-| `/archives` | Vertical timeline with glow                         |
+| `/` Home    | Terminal hero, featured grid, section counters, optional mixed feed |
+| `/archives` | Vertical timeline with glow, includes gallery entries |
 | `/tags`     | Grid with proportional progress bar                 |
 | `/search`   | Reactive aurora, restyled Pagefind                  |
-| Posts       | Glassmorphism TOC, prev/next navigation with aurora |
+| Posts       | Paginated mixed feed (posts + galleries), inline Pagefind search |
 
 ---
 
@@ -192,6 +206,8 @@ src/data/galleries/
 
 The folder name becomes the URL: `/galleries/my-trip-to-tokyo`.
 
+If `showGalleriesInIndex` is enabled in `src/config.ts`, galleries will also appear in the main listing surfaces (`/`, `/posts`, `/archives`, `/tags`, and RSS).
+
 Images are displayed **sorted alphabetically**. Use numeric prefixes (`01-`, `02-`, …) to control the order.
 
 #### Gallery frontmatter
@@ -267,7 +283,13 @@ export const SITE = {
   timezone: "America/Guatemala",  // default timezone for posts
   showArchives: true,
   showGalleries: true,   // false → hides /galleries and the nav link
+  showGalleriesInIndex: true, // include galleries in home/posts/archives/tags/RSS
   showBackButton: true,
+  heroTerminalPrompt: {
+    prefix: "~", // highlighted left part
+    path: "/ready-to-go", // main prompt text
+    suffix: "$", // terminal symbol on the right
+  },
   dynamicOgImage: true,
   introAudio: {
     enabled: true,               // show/hide the hero audio player

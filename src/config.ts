@@ -13,9 +13,14 @@ export const SITE = {
   showGalleries: true,
   showGalleriesInIndex: true, // Show galleries in the general paginated list
   showBackButton: true, // show back button in post detail
+  heroTerminalPrompt: {
+    prefix: "~", // parte resaltada a la izquierda
+    path: "/ready-to-go", // texto central del prompt
+    suffix: "$", // símbolo de terminal a la derecha
+  },
   backdropEffects: {
-    cursorGlow: true, // seguimiento de cursor con halo suave
-    grain: true, // capa de ruido visual de fondo
+    cursorGlow: false, // seguimiento de cursor con halo suave
+    grain: false, // capa de ruido visual de fondo
   },
   editPost: {
     enabled: true,
