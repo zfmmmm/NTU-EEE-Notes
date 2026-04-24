@@ -45,14 +45,12 @@ const isActive = (path: string) => {
         ]}
       >
         <!-- Logo -->
-        <a
-          href="/"
-          class="group relative z-20 flex items-center gap-2 text-xl font-bold tracking-tight sm:text-2xl shrink-0"
-        >
-          <!-- <span class="nav-logo-text">{SITE.title}</span> -->
-          <Logo class="w-37.5 dark:invert" />
-        </a>
-
+      <a
+        href="/"
+        class="group relative z-20 flex items-center h-15 overflow-hidden gap-2 text-xl font-bold tracking-tight sm:text-2xl shrink-0"
+      >
+        <Logo class="h-30 w-auto -translate-y-1" />
+      </a>
         <!-- Center Audio Player -->
         {
           SITE.introAudio.enabled && (
