@@ -1,32 +1,56 @@
 name: 自动合并
 
 on:
-  pull_request_target: # 关键：即便别人是 Fork 的也能触发，且具有写权限
+  pull_request_target:
     types: [opened, synchronize, reopened]
+    # 第一道防线：只有修改了 blog 目录才触发（节省服务器资源）
+    paths:
+      - 'src/data/blog/**'
 
-# 给予工作流对仓库内容的写权限，这是自动合并的前提
 permissions:
   contents: write
   pull-requests: write
 
 jobs:
-  fast-merge:
+  secure-merge:
     runs-on: ubuntu-latest
-    # 为了安全，你可以限定只有修改了特定文件夹的人才自动合，或者对所有人开放
-    if: github.event.pull_request.user.login != 'dependabot[bot]' # 排除机器人
     steps:
-      - name: 检查并自动合并
+      - name: 路径安全审计
         uses: actions/github-script@v6
         with:
           script: |
-            try {
-              await github.rest.pulls.merge({
+            // 1. 获取 PR 修改的所有文件
+            const { data: files } = await github.rest.pulls.listFiles({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              pull_number: context.issue.number,
+            });
+
+            // 2. 定义允许修改的白名单路径
+            const allowedPath = 'src/data/blog/';
+            
+            // 3. 检查是否有文件越界
+            const forbiddenFiles = files.filter(file => !file.filename.startsWith(allowedPath));
+
+            if (forbiddenFiles.length > 0) {
+              const fileList = forbiddenFiles.map(f => f.filename).join(', ');
+              core.setFailed(`❌ 安全拦截：PR 修改了非法路径 [${fileList}]。自动合并已取消。`);
+              
+              // 可选：在 PR 下留言提醒
+              await github.rest.issues.createComment({
                 owner: context.repo.owner,
                 repo: context.repo.repo,
-                pull_number: context.issue.number,
-                merge_method: 'squash' // 使用 squash，能让主分支历史保持整洁的一行
+                issue_number: context.issue.number,
+                body: `⚠️ **自动合并被拒绝**：你修改了权限范围外的文件：\`${fileList}\`。本项目仅允许通过此方式修改博客内容。`
               });
-              console.log("✅ 合并成功！已即时生效。");
-            } catch (error) {
-              console.log("❌ 合并失败，可能存在代码冲突，请手动处理：", error.message);
+              return;
             }
+
+            // 4. 如果审计通过，执行合并
+            await github.rest.pulls.merge({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              pull_number: context.issue.number,
+              merge_method: 'squash'
+            });
+            console.log("✅ 审计通过，已完成自动合并。");
