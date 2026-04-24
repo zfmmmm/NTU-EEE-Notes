@@ -1,0 +1,32 @@
+name: 自动合并
+
+on:
+  pull_request_target: # 关键：即便别人是 Fork 的也能触发，且具有写权限
+    types: [opened, synchronize, reopened]
+
+# 给予工作流对仓库内容的写权限，这是自动合并的前提
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  fast-merge:
+    runs-on: ubuntu-latest
+    # 为了安全，你可以限定只有修改了特定文件夹的人才自动合，或者对所有人开放
+    if: github.event.pull_request.user.login != 'dependabot[bot]' # 排除机器人
+    steps:
+      - name: 检查并自动合并
+        uses: actions/github-script@v6
+        with:
+          script: |
+            try {
+              await github.rest.pulls.merge({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                pull_number: context.issue.number,
+                merge_method: 'squash' // 使用 squash，能让主分支历史保持整洁的一行
+              });
+              console.log("✅ 合并成功！已即时生效。");
+            } catch (error) {
+              console.log("❌ 合并失败，可能存在代码冲突，请手动处理：", error.message);
+            }
