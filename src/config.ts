@@ -38,6 +38,6 @@ export const SITE = {
     // src: "/audio/intro-web.mp3",
     isStream: false, // true for radio/live stream URLs (example: https://fluxfm.streamabc.net/flx-chillhop-mp3-128-8581707)
     label: "LOFI", // display label in player
-    duration: 30, // duration in seconds (used for local files, ignored on streams)
+    duration: 10, // duration in seconds (used for local files, ignored on streams)
   },
 } as const;
