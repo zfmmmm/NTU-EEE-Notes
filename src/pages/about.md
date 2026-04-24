@@ -1,30 +1,33 @@
 ---
 layout: ../layouts/AboutLayout.astro
-title: "About"
+title: "关于本站"
 ---
 
-Welcome to my digital corner. I am a **developer** and **student** passionate about technology, video games, and building things that live on the internet.
+欢迎来到这个专属我们的数字自习室。这是一个专为 **南洋理工大学 (NTU) 电机与电子工程学院 (EEE)** 学子打造的**考前突击笔记与资源开源共享平台**。
+> 注：所有内容均为民间收集整理，请自行辨别正确性
 
-## Who am I?
+## 建立初衷
 
-My name is Andrés, and since I can remember, I have always been curious about understanding how things work — from taking apart toys as a child to taking apart other people's code at 2 AM. I am currently studying engineering while developing projects that challenge me to learn something new every day.
+无数个期末季的凌晨，我们都曾面对着堆积如山的 Lecture Notes 和晦涩难懂的公式感到无力。为了避免每次考前都在“重头造轮子”，这个网站应运而生。我们希望建立一个集中、高效、硬核的复习资料库，帮助大家在考前冲刺阶段精准把握重点，顺利通关。
 
-When I am not programming, I am probably in some virtual world exploring maps, completing missions, or competing online. Video games are not just my hobby, they also taught me how to solve problems, work in a team, and, above all, not to give up after attempt #847.
+## 核心内容
 
-## What I do
+- **考前突击指南** — 提炼核心考点、高频题型套路与速记公式。抛弃冗长的背景铺垫，直击本质，直接给答案。
+- **硬核推导解析** — 针对复杂的算法、概念或公式，提供有条理的保姆级拆解：明确目的、逐步推导、汇总本质，并结合具体应用场景说明。
+- **开源精神** — 知识的价值在于流动。我们相信开源社区的力量，所有资料均托管于 GitHub，对所有求知者开放。
 
-- **Web Development** — I love building modern web experiences with technologies like Astro, React, TypeScript, and everything the JavaScript ecosystem has to offer.
-- **Open Source** — I believe in the power of open source. You can find my projects on [GitHub](https://github.com/0xdres/).
-- **Continuous Learning** — I am always exploring new tools, frameworks, and concepts. Technology evolves fast and I like to keep up with the pace.
+## 呼吁共建 (We Need You!)
 
-## Gaming
+一个人的精力是有限的，而 EEE 的课程体系浩如烟海——从底层硬件、电路设计，到控制系统，再到 AI 算子开发与高性能计算。
 
-Video games are part of my DNA. From epic RPGs to competitive shooters, I enjoy practically any genre. It's that space where creativity meets strategy and pure fun.
+无论你是擅长推导信号处理公式的理论达人，还是热衷于底层优化的技术极客，我们都需要你的加入！这里不仅仅是一个单向输出的静态网站，更是一个属于全体同学的开源知识库。如果你有整理好的优质笔记、独到的解题技巧，或者发现已有资料中的错误，**我们极其欢迎你提交 Pull Request (PR)** 或提出 Request。
 
-## This blog
+让我们一起添砖加瓦，丰富这里的笔记内容。造福彼此的同时，也为自己的学习生涯留下一份硬核的记录。
 
-**Devosfera** was born as a space to document my journey as a developer, share what I learn, and connect with people who share the same passions. Here you will find posts about development, technology, and the occasional random late-night reflection.
+## 加入社区
 
-If you want to connect, don't hesitate to find me on [GitHub](https://github.com/0xdres/), [X](https://x.com/avdyen), or [LinkedIn](https://www.linkedin.com/in/avdyan/). It is always good to meet cool people from the community.
+本站的终极目标，是打造一份能代代相传的“EEE 生存指南”。在这里，我们共享知识，共同抗击 Deadline。
 
-> _"Code is poetry, but with more semicolons."_ — Me, probably
+如果你有意愿参与项目维护、提交复习资料，或想探讨技术细节，请随时在 [GitHub](https://github.com/zfmmmm/NTU-EEE-Notes) 上 Fork 本项目并提交你的贡献！
+
+> 一份好的突击笔记，能在凌晨两点拯救一条生命。

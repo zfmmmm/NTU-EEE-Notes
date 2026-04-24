@@ -198,3 +198,158 @@ i {
   background: color-mix(in srgb, var(--accent) 15%, transparent);
   box-shadow: 0 4px 15px color-mix(in srgb, var(--accent) 15%, transparent);
 }
+/* ====================================================== */
+/* 原生 MathML 公式主题自适应与移动端排版补丁 (最终完美版)   */
+/* ====================================================== */
+
+/* ------------------------------------------------------ */
+/* 第一部分：视觉层 —— 主题颜色与【纯正学术字体】强制接管     */
+/* ------------------------------------------------------ */
+
+/* 1. 强制原生公式继承文本颜色，并穿透 Tailwind 的字体劫持 */
+math {
+  color: var(--foreground) !important;
+  /* 【核心修复1】：强制使用传统的数学衬线字体序列，找回学术感 */
+  font-family: "KaTeX_Main", "Cambria Math", "Latin Modern Math", "STIX Two Math", "Times New Roman", serif !important;
+}
+
+/* 2. 深度穿透：确保公式内部的所有细微算符、上下标全军跟随变量和字体 */
+math * {
+  color: var(--foreground) !important;
+  font-family: inherit !important;
+}
+
+/* ------------------------------------------------------ */
+/* 第二部分：排版层 —— 移动端安全防溢出 (行内与块级双管齐下) */
+/* ------------------------------------------------------ */
+
+/* 3. 【核心修复2】：针对超长行内公式（单 $），赋予局部独立滑动能力 */
+math:not([display="block"]) {
+  display: inline-block !important;  /* 允许其像小方块一样在行内独立排版 */
+  max-width: 100% !important;        /* 宽度绝不能超过屏幕 */
+  overflow-x: auto !important;       /* 超出部分允许滑动 */
+  overflow-y: hidden !important;
+  vertical-align: middle !important; /* 保持与同行普通文字的垂直居中 */
+  -webkit-overflow-scrolling: touch !important; /* 提升苹果手机滑动顺滑度 */
+  box-sizing: border-box !important;
+}
+
+/* 4. 针对块级公式（双 $$）：安全居中与防溢出 */
+math[display="block"] {
+  display: block !important;
+  max-width: 100% !important;      /* 替换 width: 100%，防止撑破父级 padding */
+  margin: 1.5rem auto !important;  /* 使用 auto 辅助安全居中 */
+  text-align: center !important;
+  overflow-x: auto !important;
+  overflow-y: hidden !important;
+  -webkit-overflow-scrolling: touch !important;
+  padding: 1rem 0 !important;
+  box-sizing: border-box !important;
+}
+
+/* ------------------------------------------------------ */
+/* 第三部分：防御层 —— KaTeX 历史遗留产物兜底拦截             */
+/* ------------------------------------------------------ */
+
+/* 5. 物理隐身：隐藏会导致重影和乱码的 HTML 伪装层 */
+.katex-html {
+  display: none !important;
+}
+
+/* 6. 强制破壁：解除 KaTeX 引擎对 MathML 节点的默认隐藏魔法 */
+.katex-mathml {
+  display: block !important;
+  position: static !important;
+  clip: auto !important;
+  height: auto !important;
+  width: auto !important;
+  overflow: visible !important;
+}
+
+/* 7. 兜底居中：统一外层包裹器的行为 */
+.katex-display {
+  display: block !important;
+  max-width: 100% !important;
+  margin: 1.5rem auto !important;
+  text-align: center !important;
+  overflow-x: auto !important;
+  overflow-y: hidden !important;
+  -webkit-overflow-scrolling: touch !important;
+  box-sizing: border-box !important;
+}
+/* ====================================================== */
+/* Markdown 表格主题自适应与移动端安全防溢出补丁              */
+/* ====================================================== */
+
+/* 1. 核心修复：赋予表格独立的横向滑动能力，彻底阻断撑爆网页的 Bug */
+.app-prose table {
+  display: block !important;           /* 强制将表格转为块级容器，这是允许内部滑动的前提 */
+  width: 100% !important;              /* 撑满文章区域宽度 */
+  max-width: 100% !important;
+  overflow-x: auto !important;         /* 移动端核心：内容超出时，只在表格内部产生横向滑动 */
+  -webkit-overflow-scrolling: touch !important; /* 赋予 iOS 丝滑的惯性滚动体验 */
+  border-collapse: collapse !important;/* 合并相邻边框，让线条更细致专业 */
+  margin: 2rem 0 !important;           /* 上下留出充足的呼吸感 */
+}
+
+/* 2. 视觉层：文字与边框的绝对颜色接管 */
+.app-prose table th,
+.app-prose table td {
+  color: var(--foreground) !important;        /* 文字强制跟随日/夜间文本变量 */
+  border: 1px solid var(--border) !important; /* 边框强制跟随日/夜间边框变量 */
+  padding: 0.75rem 1rem !important;           /* 增加单元格内边距，告别拥挤感 */
+}
+
+/* 3. 层级优化：让表头（第一行）有别于普通数据，提升阅读体验 */
+.app-prose table th {
+  background-color: var(--muted) !important;  /* 使用 AstroPaper 自带的次级背景色填充表头 */
+  font-weight: 600 !important;                /* 表头字体加粗 */
+  text-align: left;
+}
+/* ====================================================== */
+/* 极客博客移动端防溢出终极补丁 (代码块 & 视频嵌入)             */
+/* ====================================================== */
+
+/* 1. 代码块 (Pre) 移动端原生级顺滑滚动与安全隔离 */
+.app-prose pre {
+  max-width: 100% !important;
+  overflow-x: auto !important;
+  -webkit-overflow-scrolling: touch !important; /* 赋予 iOS 丝滑的惯性滑动体验 */
+}
+
+/* 2. 响应式视频/多媒体嵌入 (Iframe) 自动缩放 */
+.app-prose iframe,
+.app-prose video {
+  max-width: 100% !important; /* 绝对不允许视频宽度超过手机屏幕 */
+  height: auto !important;    /* 高度自动计算 */
+  aspect-ratio: 16 / 9;       /* 强制保持 16:9 黄金比例，防止视频变形拉伸 */
+  border-radius: 0.5rem;      /* 增加一点圆角，更符合 AstroPaper 的现代审美 */
+  margin: 1.5rem auto !important;
+  display: block;
+}
+
+/* 3. 超长连续字符防爆破（全面覆盖正文、所有级别标题） */
+.app-prose p,
+.app-prose h1,
+.app-prose h2,
+.app-prose h3,
+.app-prose h4,
+.app-prose h5,
+.app-prose h6 {
+  overflow-wrap: break-word !important; /* 现代浏览器的标准属性：允许在长单词内部换行 */
+  word-wrap: break-word !important;     /* 兼容旧版浏览器 */
+  word-break: break-word !important;    /* 核心指令：宁可从字符中间截断，也绝不允许撑爆屏幕宽度 */
+}
+/* ====================================================== */
+/* 表格内代码块防换行补丁 (Table Code Nowrap)               */
+/* ====================================================== */
+
+/* 撤销 AstroPaper 默认的 break-all 设定。
+  既然表格已经可以横向滑动，强制表格内的 inline-code 保持在一行显示，提升代码可读性。
+*/
+.app-prose table code {
+  white-space: nowrap !important;        /* 核心指令：绝对不允许折行 */
+  word-break: normal !important;         /* 覆盖我们之前设置的强制截断 */
+  overflow-wrap: normal !important;      /* 恢复代码单词的完整性 */
+  word-wrap: normal !important;
+}

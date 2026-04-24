@@ -12,7 +12,7 @@ import GalleryEmbed from "@/components/GalleryEmbed.astro";
 import { getPath } from "@/utils/getPath";
 import { slugifyStr } from "@/utils/slugify";
 import { SITE } from "@/config";
-
+import Giscus from '@/components/Giscus.astro';
 type Props = {
   post: CollectionEntry<"blog">;
   posts: CollectionEntry<"blog">[];
@@ -223,7 +223,7 @@ const nextPost =
       <!-- Share links -->
       <ShareLinks />
     </div>
-
+<Giscus />
     <!-- Decorative separator before prev/next -->
     <div class="my-6 flex items-center gap-3" aria-hidden="true">
       <div
@@ -231,7 +231,6 @@ const nextPost =
       >
       </div>
     </div>
-
     <!-- Previous/Next Post Navigation -->
     <div data-pagefind-ignore class="grid grid-cols-2 gap-3">
       {

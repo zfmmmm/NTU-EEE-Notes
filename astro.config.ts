@@ -11,6 +11,8 @@ import {
 } from "@shikijs/transformers";
 import { transformerFileName } from "./src/utils/transformers/fileName";
 import { SITE } from "./src/config";
+import remarkMath from "remark-math";
+import rehypeKatex from "rehype-katex";
 
 // https://astro.build/config
 export default defineConfig({
@@ -24,7 +26,11 @@ export default defineConfig({
     }),
   ],
   markdown: {
-    remarkPlugins: [remarkToc, [remarkCollapse, { test: "Table of contents" }]],
+    remarkPlugins: [remarkToc, [remarkCollapse, { test: "Table of contents" }], remarkMath,],
+     rehypePlugins: [
+      // 将 rehypeKatex 放入 rehype 插件数组中
+      [rehypeKatex, { output: "mathml" }],
+    ],
     shikiConfig: {
       // For more themes, visit https://shiki.style/themes
       themes: { light: "min-light", dark: "github-dark-default" },
@@ -58,58 +64,59 @@ export default defineConfig({
     },
   },
 
-  fonts: [
-    {
-      name: "Wotfard",
-      cssVariable: "--font-wotfard",
-      fallbacks: ["sans-serif"],
-      provider: fontProviders.local(),
-      options: {
-        variants: [
-          {
-            src: ["./src/assets/fonts/wotfard.woff2"],
-          },
-        ],
-      },
+fonts: [
+  {
+    name: "Noto Sans SC",
+    cssVariable: "--font-sans",
+    fallbacks: [
+      "PingFang SC",
+      "Hiragino Sans GB",
+      "Microsoft YaHei",
+      "sans-serif",
+    ],
+    provider: fontProviders.local(),
+    options: {
+      variants: [
+        {
+          src: ["./src/assets/fonts/noto-sans-sc.woff2"],
+        },
+      ],
     },
-    {
-      name: "Sriracha",
-      cssVariable: "--font-sriracha",
-      fallbacks: ["cursive"],
-      provider: fontProviders.local(),
-      options: {
-        variants: [
-          {
-            src: ["./src/assets/fonts/sriracha.woff2"],
-          },
-        ],
-      },
+  },
+  {
+    name: "Noto Serif SC",
+    cssVariable: "--font-serif",
+    fallbacks: [
+      "Songti SC",
+      "STSong",
+      "SimSun",
+      "serif",
+    ],
+    provider: fontProviders.local(),
+    options: {
+      variants: [
+        {
+          src: ["./src/assets/fonts/noto-serif-sc.woff2"],
+        },
+      ],
     },
-    {
-      name: "Cartograph CF",
-      cssVariable: "--font-cartograph",
-      fallbacks: ["monospace"],
-      provider: fontProviders.local(),
-      options: {
-        variants: [
-          {
-            src: ["./src/assets/fonts/cartograph-cf.woff2"],
-          },
-        ],
-      },
+  },
+  {
+    name: "Sarasa Mono SC",
+    cssVariable: "--font-mono",
+    fallbacks: [
+      "Cascadia Code",
+      "JetBrains Mono",
+      "monospace",
+    ],
+    provider: fontProviders.local(),
+    options: {
+      variants: [
+        {
+          src: ["./src/assets/fonts/sarasa-mono-sc.woff2"],
+        },
+      ],
     },
-    {
-      name: "Cascadia Code",
-      cssVariable: "--font-cascadia-code",
-      fallbacks: ["monospace"],
-      provider: fontProviders.local(),
-      options: {
-        variants: [
-          {
-            src: ["./src/assets/fonts/cascadia-code.woff2"],
-          },
-        ],
-      },
-    },
-  ],
+  },
+],
 });

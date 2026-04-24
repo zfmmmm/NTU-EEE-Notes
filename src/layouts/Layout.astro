@@ -66,17 +66,26 @@ const showGrain = SITE.backdropEffects.grain;
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <link rel="canonical" href={canonicalURL} />
     <meta name="generator" content={Astro.generator} />
+    <link 
+      rel="stylesheet" 
+      href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css" 
+      integrity="sha384-n8MVd4RsEw0928Y9E0z2zD014vT1kFqhO1z2ZheA3r2rB7iB3K4i4N2Gg0/HwIQA" 
+      crossorigin="anonymous"
+    >
+<!-- Load Fonts -->
+<!-- 只 preload 中文主字体，避免首屏闪烁 -->
+<Font
+  cssVariable="--font-sans"
+  preload={[
+    { subset: "chinese-simplified", weight: 400, style: "normal" },
+  ]}
+/>
 
-    <!-- Load Fonts -->
-    <!-- Only preload the primary body font. Others load async to avoid bandwidth contention. -->
-    <Font
-      cssVariable="--font-wotfard"
-      preload={[{ subset: "latin", weight: 400, style: "normal" }]}
-    />
-    <Font cssVariable="--font-sriracha" />
-    <Font cssVariable="--font-cartograph" />
-    <Font cssVariable="--font-cascadia-code" />
+<!-- 衬线字体（阅读用，可异步） -->
+<Font cssVariable="--font-serif" />
 
+<!-- 等宽字体（代码用） -->
+<Font cssVariable="--font-mono" />
     <!-- General Meta Tags -->
     <title>{title}</title>
     <meta name="description" content={description} />
