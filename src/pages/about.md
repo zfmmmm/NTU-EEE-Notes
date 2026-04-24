@@ -28,6 +28,10 @@ title: "关于本站"
 
 本站的终极目标，是打造一份能代代相传的“EEE 生存指南”。在这里，我们共享知识，共同抗击 Deadline。
 
-如果你有意愿参与项目维护、提交复习资料，或想探讨技术细节，请随时在 [GitHub](https://github.com/zfmmmm/NTU-EEE-Notes) 上 Fork 本项目并提交你的贡献！
+如果你愿意参与项目维护、提交复习资料，或者一起探讨技术细节，欢迎在 GitHub 上 Fork 本项目并提交你的贡献：
+[https://github.com/zfmmmm/NTU-EEE-Notes](https://github.com/zfmmmm/NTU-EEE-Notes)
+
+同时也可以通过邮件与我联系，提交相关资料或建议，非常欢迎你的参与！
+
 
 > 一份好的突击笔记，能在凌晨两点拯救一条生命。
